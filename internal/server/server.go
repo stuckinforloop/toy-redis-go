@@ -31,9 +31,13 @@ func (s *Server) Start() {
 	}
 
 	for {
-		_, err := l.Accept()
+		conn, err := l.Accept()
 		if err != nil {
 			log.Fatalf("accept connection: %v", err)
+		}
+
+		if err := handle(conn); err != nil {
+			log.Printf("handle conn: %v", err)
 		}
 	}
 }
