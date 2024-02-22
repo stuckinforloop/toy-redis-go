@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/codecrafters-io/redis-starter-go/internal/server"
+)
 
 func main() {
-	fmt.Println("Toy Redis Server...")
+	server.New().Start()
 }
