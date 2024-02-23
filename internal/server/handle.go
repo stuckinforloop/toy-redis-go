@@ -19,7 +19,9 @@ func handle(conn net.Conn) error {
 			if errors.Is(err, io.EOF) {
 				break
 			}
-			return fmt.Errorf("connection read: %w", err)
+			if _, err := conn.Write([]byte("ERR connection read error\r\n")); err != nil {
+				return fmt.Errorf("write to conn: %w", err)
+			}
 		}
 
 		// TODO parse request data

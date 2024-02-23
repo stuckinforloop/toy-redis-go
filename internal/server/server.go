@@ -36,8 +36,10 @@ func (s *Server) Start() {
 			log.Fatalf("accept connection: %v", err)
 		}
 
-		if err := handle(conn); err != nil {
-			log.Printf("handle conn: %v", err)
-		}
+		go func(conn net.Conn) {
+			if err := handle(conn); err != nil {
+				log.Printf("handle: %v", err)
+			}
+		}(conn)
 	}
 }
