@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strings"
 
 	"github.com/codecrafters-io/redis-starter-go/internal/protocol"
 )
@@ -12,9 +13,10 @@ import (
 func handle(conn net.Conn) error {
 	defer conn.Close()
 
+	var err error
 	b := make([]byte, 1024)
 	for {
-		_, err := conn.Read(b)
+		_, err = conn.Read(b)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				break
@@ -24,15 +26,28 @@ func handle(conn net.Conn) error {
 			}
 		}
 
-		// TODO parse request data
+		parsedArgs, err := protocol.Parse(b)
+		if err != nil {
+			err = fmt.Errorf("parse request: %w", err)
+		}
 
-		firstByte := protocol.DataTypeToFirstByte[protocol.SimpleString]
-		response := firstByte + "PONG" + "\r\n"
+		args, ok := parsedArgs.([]string)
+		if !ok {
+			err = fmt.Errorf("parse request: %w", err)
+		}
 
-		if _, err := conn.Write([]byte(response)); err != nil {
+		command := strings.ToLower(args[0])
+
+		// TODO: Add support for 2nd element to be a command
+		response, err := protocol.Command(command).Run(args[1:])
+		if err != nil {
+			err = fmt.Errorf("run command: %w", err)
+		}
+
+		if _, err := conn.Write(response); err != nil {
 			return fmt.Errorf("write to conn: %w", err)
 		}
 	}
 
-	return nil
+	return err
 }
