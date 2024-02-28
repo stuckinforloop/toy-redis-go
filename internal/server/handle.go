@@ -28,12 +28,12 @@ func handle(conn net.Conn) error {
 
 		parsedArgs, err := protocol.Parse(b)
 		if err != nil {
-			err = fmt.Errorf("parse request: %w", err)
+			return fmt.Errorf("parse request: %w", err)
 		}
 
 		args, ok := parsedArgs.([]string)
 		if !ok {
-			err = fmt.Errorf("parse request: %w", err)
+			return fmt.Errorf("parse request: %w", err)
 		}
 
 		command := strings.ToLower(args[0])
@@ -41,7 +41,7 @@ func handle(conn net.Conn) error {
 		// TODO: Add support for 2nd element to be a command
 		response, err := protocol.Command(command).Run(args[1:])
 		if err != nil {
-			err = fmt.Errorf("run command: %w", err)
+			return fmt.Errorf("run command: %w", err)
 		}
 
 		if _, err := conn.Write(response); err != nil {
@@ -49,5 +49,5 @@ func handle(conn net.Conn) error {
 		}
 	}
 
-	return err
+	return nil
 }

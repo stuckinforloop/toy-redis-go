@@ -6,6 +6,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestParseString(t *testing.T) {
+	str, err := Parse([]byte("+OK\r\n"))
+	assert.NoError(t, err)
+	assert.Equal(t, str, "OK")
+}
+
 func TestParseBulkString(t *testing.T) {
 	testCases := []struct {
 		bulkString []byte
@@ -47,5 +53,31 @@ func TestParseArray(t *testing.T) {
 		elements, err := Parse(testCase.array)
 		assert.NoError(t, err)
 		assert.ObjectsAreEqual(testCase.elements, elements)
+	}
+}
+
+func TestParseInteger(t *testing.T) {
+	testCases := []struct {
+		input   []byte
+		integer int
+	}{
+		{
+			input:   []byte(":-1\r\n"),
+			integer: -1,
+		},
+		{
+			input:   []byte(":0\r\n"),
+			integer: 0,
+		},
+		{
+			input:   []byte(":+1\r\n"),
+			integer: 1,
+		},
+	}
+
+	for _, testCase := range testCases {
+		int, err := Parse(testCase.input)
+		assert.NoError(t, err)
+		assert.Equal(t, testCase.integer, int)
 	}
 }
