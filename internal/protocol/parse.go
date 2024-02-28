@@ -52,10 +52,9 @@ func parseArray(data []byte) ([]string, error) {
 		return []string{}, nil
 	}
 
-	// TODO: Uncomment after codecrafters fix their test
-	// if arrLength != (len(parts)-1)/2 {
-	// 	return nil, fmt.Errorf("no. of elements don't match array length: %v", string(data))
-	// }
+	if arrLength != (len(parts)-1)/2 {
+		return nil, fmt.Errorf("no. of elements don't match array length: %v", string(data))
+	}
 
 	elements := []string{}
 	for i := 1; i < len(parts)-1; i = i + 2 {

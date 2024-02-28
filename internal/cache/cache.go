@@ -1,24 +1,46 @@
 package cache
 
 import (
-	"fmt"
+	"time"
 )
 
+type Node struct {
+	Value      string
+	CreatedAt  time.Time
+	Expiration time.Duration
+}
+
 // TODO: Implement LRU cache
-var cache map[string]string
+var cache map[string]Node
 
 func init() {
-	cache = make(map[string]string)
+	cache = make(map[string]Node)
 }
 
 func Get(key string) (string, bool) {
-	val, ok := cache[key]
+	node, ok := cache[key]
+	if !ok {
+		return "", false
+	}
 
-	return val, ok
+	// if created_at not present, no need to check for expiration
+	if node.CreatedAt.IsZero() {
+		return node.Value, ok
+	}
+
+	timeElapsed := time.Now().Sub(node.CreatedAt)
+	if timeElapsed > node.Expiration {
+		// remove the key value from cache -- passive expiry
+		delete(cache, key)
+
+		return "", false
+	}
+
+	return node.Value, ok
 }
 
-func Set(key string, value any) error {
-	cache[key] = fmt.Sprint(value)
+func Set(key string, node Node) error {
+	cache[key] = node
 
 	return nil
 }

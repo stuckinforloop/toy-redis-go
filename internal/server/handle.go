@@ -13,10 +13,9 @@ import (
 func handle(conn net.Conn) error {
 	defer conn.Close()
 
-	var err error
-	b := make([]byte, 1024)
 	for {
-		_, err = conn.Read(b)
+		b := make([]byte, 1024)
+		_, err := conn.Read(b)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				break
