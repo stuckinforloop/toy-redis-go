@@ -1,12 +1,12 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net"
 )
 
 const (
-	addr    string = ":6379"
 	network string = "tcp"
 )
 
@@ -15,15 +15,15 @@ type Server struct {
 	network string
 }
 
-func New() *Server {
+func New(port *string) *Server {
 	return &Server{
-		addr:    addr,
+		addr:    fmt.Sprintf(":%s", *port),
 		network: network,
 	}
 }
 
 func (s *Server) Start() {
-	log.Printf("listening for tcp connections on port: %s\n", s.addr)
+	log.Printf("listening for tcp connections on port %s\n", s.addr)
 
 	l, err := net.Listen(s.network, s.addr)
 	if err != nil {
