@@ -16,6 +16,7 @@ const (
 	Echo Command = "echo"
 	Get  Command = "get"
 	Set  Command = "set"
+	Info Command = "info"
 )
 
 func (c Command) Run(args []string) ([]byte, error) {
@@ -28,6 +29,8 @@ func (c Command) Run(args []string) ([]byte, error) {
 		return c.set(args)
 	case Get:
 		return c.get(args[0]), nil
+	case Info:
+		return c.info(args[0]), nil
 	default:
 		return []byte("unkown command"), nil
 	}
@@ -85,5 +88,12 @@ func (c Command) get(key string) []byte {
 	}
 
 	msg := fmt.Sprintf("%s%d\r\n%s\r\n", string(RespBulkString), len(val), val)
+	return []byte(msg)
+}
+
+func (c Command) info(_ string) []byte {
+	// TODO: handle section
+	msg := "role:master"
+	msg = fmt.Sprintf("%s%d\r\n%s\r\n", string(RespBulkString), len(msg), msg)
 	return []byte(msg)
 }
