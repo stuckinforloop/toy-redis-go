@@ -23,7 +23,21 @@ func (s *Server) RunCommand(command string, args []string) ([]byte, error) {
 	case Get:
 		return protocol.Get(args[0]), nil
 	case Info:
-		return protocol.Info(s.role), nil
+		server := protocol.Server{
+			Port: s.port,
+			Role: s.role,
+		}
+
+		switch s.role {
+		case master:
+			server.Master.ReplicationID = s.master.ReplicationID
+			server.Master.ReplicationOffset = s.master.ReplicationOffset
+		case slave:
+			server.Replica.MasterHost = s.replica.MasterHost
+			server.Replica.MasterPort = s.replica.MasterPort
+		}
+
+		return protocol.Info(server), nil
 	default:
 		return []byte("unkown command"), nil
 	}

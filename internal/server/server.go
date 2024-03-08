@@ -11,12 +11,20 @@ const (
 
 	master string = "master"
 	slave  string = "slave"
+
+	masterReplicationID string = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb"
 )
 
 type Server struct {
 	port    string
 	role    string
+	master  Master
 	replica Replica
+}
+
+type Master struct {
+	ReplicationID     string
+	ReplicationOffset int
 }
 
 type Replica struct {
@@ -39,12 +47,19 @@ func WithReplica(r Replica) Option {
 func New(port string, opts ...Option) (*Server, error) {
 	s := &Server{
 		port: fmt.Sprintf(":%s", port),
-		role: master,
 	}
 
 	for _, opt := range opts {
 		if err := opt(s); err != nil {
 			return nil, fmt.Errorf("option: %w", err)
+		}
+	}
+
+	if s.role == "" {
+		s.role = master
+		s.master = Master{
+			ReplicationID:     masterReplicationID,
+			ReplicationOffset: 0,
 		}
 	}
 

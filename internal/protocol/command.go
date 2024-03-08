@@ -64,9 +64,31 @@ func Get(key string) []byte {
 	return []byte(msg)
 }
 
-func Info(role string) []byte {
+type Server struct {
+	Port    string
+	Role    string
+	Master  Master
+	Replica Replica
+}
+
+type Master struct {
+	ReplicationID     string
+	ReplicationOffset int
+}
+
+type Replica struct {
+	MasterHost string
+	MasterPort string
+}
+
+func Info(s Server) []byte {
 	// TODO: handle section
-	msg := "role" + ":" + role
+	msg := "role" + ":" + s.Role
+	if s.Role == "master" {
+		msg += "\r\nmaster_replid" + ":" + s.Master.ReplicationID
+		msg += "\r\nmaster_repl_offset" + ":" + strconv.Itoa(s.Master.ReplicationOffset)
+	}
+
 	msg = fmt.Sprintf("%s%d\r\n%s\r\n", string(RespBulkString), len(msg), msg)
 	return []byte(msg)
 }
