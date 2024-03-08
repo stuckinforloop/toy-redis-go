@@ -9,39 +9,12 @@ import (
 	"github.com/codecrafters-io/redis-starter-go/internal/cache"
 )
 
-type Command string
-
-const (
-	Ping Command = "ping"
-	Echo Command = "echo"
-	Get  Command = "get"
-	Set  Command = "set"
-	Info Command = "info"
-)
-
-func (c Command) Run(args []string) ([]byte, error) {
-	switch c {
-	case Ping:
-		return c.ping()
-	case Echo:
-		return c.echo(args[0])
-	case Set:
-		return c.set(args)
-	case Get:
-		return c.get(args[0]), nil
-	case Info:
-		return c.info(args[0]), nil
-	default:
-		return []byte("unkown command"), nil
-	}
-}
-
-func (c Command) ping() ([]byte, error) {
+func Ping() ([]byte, error) {
 	msg := fmt.Sprintf("%sPONG\r\n", string(RespString))
 	return []byte(msg), nil
 }
 
-func (c Command) echo(msg string) ([]byte, error) {
+func Echo(msg string) ([]byte, error) {
 	msg = fmt.Sprintf("%s%d\r\n%s\r\n", string(RespBulkString), len(msg), msg)
 	return []byte(msg), nil
 }
@@ -53,7 +26,7 @@ const (
 	PX SetOption = "px"
 )
 
-func (c Command) set(args []string) ([]byte, error) {
+func Set(args []string) ([]byte, error) {
 	var node cache.Node
 
 	key := args[0]
@@ -81,7 +54,7 @@ func (c Command) set(args []string) ([]byte, error) {
 	return []byte("+OK\r\n"), nil
 }
 
-func (c Command) get(key string) []byte {
+func Get(key string) []byte {
 	val, ok := cache.Get(key)
 	if !ok {
 		return []byte("$-1\r\n")
@@ -91,9 +64,9 @@ func (c Command) get(key string) []byte {
 	return []byte(msg)
 }
 
-func (c Command) info(_ string) []byte {
+func Info(role string) []byte {
 	// TODO: handle section
-	msg := "role:master"
+	msg := "role" + ":" + role
 	msg = fmt.Sprintf("%s%d\r\n%s\r\n", string(RespBulkString), len(msg), msg)
 	return []byte(msg)
 }

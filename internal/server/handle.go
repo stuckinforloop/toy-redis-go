@@ -10,7 +10,7 @@ import (
 	"github.com/codecrafters-io/redis-starter-go/internal/protocol"
 )
 
-func handle(conn net.Conn) error {
+func (s *Server) handle(conn net.Conn) error {
 	defer conn.Close()
 
 	for {
@@ -38,7 +38,7 @@ func handle(conn net.Conn) error {
 		command := strings.ToLower(args[0])
 
 		// TODO: Add support for 2nd element to be a command
-		response, err := protocol.Command(command).Run(args[1:])
+		response, err := s.RunCommand(command, args[1:])
 		if err != nil {
 			return fmt.Errorf("run command: %w", err)
 		}
