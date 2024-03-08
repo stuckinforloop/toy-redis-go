@@ -45,6 +45,9 @@ func WithReplica(r Replica) Option {
 }
 
 func New(port string, opts ...Option) (*Server, error) {
+	if port == "" {
+		port = "6379"
+	}
 	s := &Server{
 		port: fmt.Sprintf(":%s", port),
 	}
@@ -69,6 +72,13 @@ func New(port string, opts ...Option) (*Server, error) {
 func (s *Server) Start() {
 	log.Printf("listening for tcp connections on port %s\n", s.port)
 
+	// connect to master server
+	if s.role == slave {
+		if err := s.connectMaster(); err != nil {
+			log.Fatalf("connect to master: %v", err)
+		}
+	}
+
 	l, err := net.Listen(network, s.port)
 	if err != nil {
 		log.Fatalf("listen: %v", err)
@@ -86,4 +96,26 @@ func (s *Server) Start() {
 			}
 		}()
 	}
+}
+
+func (s *Server) connectMaster() error {
+	conn, err := net.Dial(network, fmt.Sprintf("%s:%s", s.replica.MasterHost, s.replica.MasterPort))
+	if err != nil {
+		return fmt.Errorf("connect to master: %w", err)
+	}
+
+	if _, err := conn.Write([]byte("*1\r\n$4\r\nping\r\n")); err != nil {
+		return fmt.Errorf("ping master: %w", err)
+	}
+
+	buf := make([]byte, 1024)
+
+	n, err := conn.Read(buf)
+	if err != nil {
+		return fmt.Errorf("read master response: %w", err)
+	}
+
+	log.Println("resp from master: ", string(buf[:n]))
+
+	return nil
 }
